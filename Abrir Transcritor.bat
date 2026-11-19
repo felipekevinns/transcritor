@@ -1,5 +1,7 @@
 @echo off
-REM Abre o Transcritor. Se der algum erro, esta janela mostra a mensagem.
+REM Abre o Transcritor mostrando mensagens de erro, se houver (diagnostico).
+set "PY=%~dp0runtime\python\python.exe"
+if not exist "%PY%" set "PY=%~dp0venv\Scripts\python.exe"
 cd /d "%~dp0app"
-"%~dp0venv\Scripts\python.exe" app.py
+"%PY%" app.py
 if errorlevel 1 pause

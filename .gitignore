@@ -21,3 +21,7 @@ install_*.txt
 
 # Pacotes de release
 dist/
+
+# Executavel gerado pelo launcher\compilar.ps1
+/Transcritor.exe
+instalador/imagens/*.png

@@ -18,6 +18,15 @@ warnings.filterwarnings("ignore")
 os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
+if os.name == "nt":
+    # O huggingface_hub marca links simbolicos como suportados antes de testar;
+    # com downloads paralelos no Windows (sem Modo Desenvolvedor) isso falha.
+    try:
+        import huggingface_hub.file_download as _hf_fd
+        _hf_fd.are_symlinks_supported = lambda cache_dir=None: False
+    except Exception:
+        pass
+
 try:
     sys.stdout.reconfigure(encoding="utf-8", line_buffering=True)
     sys.stderr.reconfigure(encoding="utf-8", line_buffering=True)

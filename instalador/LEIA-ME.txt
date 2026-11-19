@@ -1,0 +1,33 @@
+﻿TRANSCRITOR 1.1.0
+Transcrição local de vídeos e áudios, com identificação de falantes.
+https://github.com/felipekevinns/transcritor
+
+
+COMO USAR
+
+1. Dê dois cliques em Transcritor.exe.
+2. Na primeira vez, clique em "Preparar". O Transcritor baixa o que precisa
+   (cerca de 4,5 GB) e guarda tudo nesta pasta. Leva de 10 a 30 minutos.
+3. Pronto. Das próximas vezes, o Transcritor abre direto.
+
+
+VERSÃO PORTABLE
+
+- Nada é instalado no Windows: tudo fica dentro desta pasta.
+- A pasta pode ser movida ou copiada para outro computador. Se ela for
+  usada num PC sem placa NVIDIA, escolha "Processador" no aplicativo.
+- Para remover, basta apagar a pasta.
+- Prefira um caminho curto, como C:\Transcritor ou D:\Transcritor.
+
+
+AVISO DO WINDOWS
+
+O Transcritor.exe não tem assinatura digital paga. Se aparecer
+"O Windows protegeu o computador", clique em "Mais informações" e em
+"Executar assim mesmo". O código-fonte é aberto e está no GitHub.
+
+
+IDENTIFICAÇÃO DE FALANTES
+
+Requer um token gratuito do Hugging Face. As instruções estão no README:
+https://github.com/felipekevinns/transcritor#identificação-de-falantes

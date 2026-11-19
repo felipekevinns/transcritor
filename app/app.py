@@ -20,8 +20,24 @@ UI_DIR = os.path.join(APP_DIR, "ui")
 CONFIG_PATH = os.path.join(APP_DIR, "config.json")
 TOKEN_PATH = os.path.join(BASE_DIR, "hf_token.txt")
 LOG_PATH = os.path.join(APP_DIR, "ultimo_registro.txt")
-VENV_PY = os.path.join(BASE_DIR, "venv", "Scripts", "python.exe")
 WORKER = os.path.join(APP_DIR, "worker.py")
+
+# Layout portatil/instalado: runtime\python (Python embutido) e runtime\ffmpeg.
+# Layout de desenvolvimento: venv\ criado pelo instalar.ps1.
+RUNTIME_DIR = os.path.join(BASE_DIR, "runtime")
+RUNTIME_PY = os.path.join(RUNTIME_DIR, "python", "python.exe")
+if os.path.exists(RUNTIME_PY):
+    VENV_PY = RUNTIME_PY
+    # Modelos ficam dentro da pasta do programa (portatil de verdade)
+    os.environ.setdefault("HF_HOME", os.path.join(BASE_DIR, "models", "huggingface"))
+    os.environ.setdefault("TORCH_HOME", os.path.join(BASE_DIR, "models", "torch"))
+    os.environ.setdefault("NLTK_DATA", os.path.join(BASE_DIR, "models", "nltk_data"))
+    try:
+        os.makedirs(os.environ["NLTK_DATA"], exist_ok=True)
+    except OSError:
+        pass
+else:
+    VENV_PY = os.path.join(BASE_DIR, "venv", "Scripts", "python.exe")
 
 MEDIA_EXT = {
     ".mp4", ".mkv", ".mov", ".avi", ".wmv", ".webm", ".flv", ".m4v", ".mpg", ".mpeg", ".ts", ".3gp",
@@ -49,6 +65,9 @@ NO_WINDOW = 0x08000000  # CREATE_NO_WINDOW
 
 
 def find_tool(name):
+    local = os.path.join(RUNTIME_DIR, "ffmpeg", name + ".exe")
+    if os.path.exists(local):
+        return local
     p = shutil.which(name)
     if p:
         return p
@@ -242,6 +261,8 @@ class Api:
         if not token:
             return {"ok": False, "message": "Nenhum token salvo."}
         try:
+            import huggingface_hub.file_download as _hf_fd
+            _hf_fd.are_symlinks_supported = lambda cache_dir=None: False
             from huggingface_hub import HfApi, hf_hub_download
             HfApi(token=token).whoami()
         except Exception:
@@ -448,7 +469,28 @@ def bind_drop(window, api):
     window.dom.document.events.drop += DOMEventHandler(on_drop, True, True)
 
 
+def set_window_icon(window):
+    """Troca o icone do Python pelo do Transcritor na barra de titulo e de tarefas."""
+    try:
+        from System import Action
+        from System.Drawing import Icon as WinIcon
+        form = window.native
+        ico = WinIcon(os.path.join(APP_DIR, "transcritor.ico"))
+
+        def apply():
+            form.Icon = ico
+        form.Invoke(Action(apply))
+    except Exception:
+        pass
+
+
 def main():
+    try:
+        # identidade propria na barra de tarefas (nao agrupa com o Python)
+        import ctypes
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("FelipeKevin.Transcritor")
+    except Exception:
+        pass
     api = Api()
     window = webview.create_window(
         "Transcritor",
@@ -460,6 +502,7 @@ def main():
     )
     api._window = window
     window.events.loaded += lambda: bind_drop(window, api)
+    window.events.shown += lambda: set_window_icon(window)
 
     def on_closing():
         api.cancel()

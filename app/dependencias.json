@@ -1,0 +1,39 @@
+{
+  "versao": "1.1.0",
+  "python": {
+    "url": "https://www.python.org/ftp/python/3.11.9/python-3.11.9-embed-amd64.zip",
+    "sha256": "009d6bf7e3b2ddca3d784fa09f90fe54336d5b60f0e0f305c37f400bf83cfd3b"
+  },
+  "getpip": "https://bootstrap.pypa.io/get-pip.py",
+  "ffmpeg": {
+    "url": "https://github.com/GyanD/codexffmpeg/releases/download/9.0.2/ffmpeg-9.0.2-essentials_build.zip",
+    "sha256": "60f467265b1e312373dbcd92200c2618a74850f98d3d078e94296bb3fa2047ba"
+  },
+  "torch": ["torch==2.8.0", "torchaudio==2.8.0", "torchvision==0.23.0"],
+  "torch_index_gpu": "https://download.pytorch.org/whl/cu128",
+  "torch_index_cpu": "https://download.pytorch.org/whl/cpu",
+  "pacotes": [
+    "pip-system-certs==5.3",
+    "whisperx==3.8.6",
+    "python-docx==1.2.0",
+    "hf_xet==1.8.0"
+  ],
+  "interface": ["proxy_tools==0.1.0", "pywebview==6.2.1"],
+  "modelos": [
+    { "repo": "Systran/faster-whisper-large-v3" },
+    { "repo": "mobiuslabsgmbh/faster-whisper-large-v3-turbo" },
+    { "repo": "jonatasgrosman/wav2vec2-large-xlsr-53-portuguese",
+      "ignorar": ["*.msgpack", "*.h5", "language_model/*", "*.txt", "*.sh", "eval.py"] },
+    { "repo": "jonatasgrosman/wav2vec2-large-xlsr-53-portuguese", "revisao": "refs/pr/4",
+      "somente": ["model.safetensors"] }
+  ],
+  "nltk": ["punkt_tab"],
+  "estimativa_bytes": {
+    "torch_gpu": 3700000000,
+    "torch_cpu": 350000000,
+    "pacotes": 700000000,
+    "modelos": 6800000000
+  },
+  "vcredist":"https://aka.ms/vs/17/release/vc_redist.x64.exe",
+  "webview2": "https://go.microsoft.com/fwlink/p/?LinkId=2124703"
+}

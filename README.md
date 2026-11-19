@@ -72,7 +72,7 @@ Tempos medidos com uma **NVIDIA GeForce RTX 3050 (8 GB)** e um **AMD Ryzen 5 560
 | Identificação de falantes (somar) | + ~11 min |
 | Somente processador | 2 a 3 h |
 
-Os tempos variam com a proporção de fala no áudio e com a placa de vídeo. A primeira execução também baixa os modelos (de 3 a 5 GB, uma única vez).
+Os tempos variam com a proporção de fala no áudio e com a placa de vídeo. A primeira execução também baixa os modelos (cerca de 7 GB, uma única vez), a menos que eles sejam baixados já na instalação.
 
 > **Sobre a precisão:** em áudio bem gravado, o `large-v3` costuma acertar bem mais de 95% das palavras em português. Nomes próprios raros, falas sobrepostas e música de fundo alta ainda podem gerar erros, e o campo **Vocabulário** reduz bastante os erros em termos específicos. Recomenda-se sempre uma revisão final.
 
@@ -81,35 +81,70 @@ Os tempos variam com a proporção de fala no áudio e com a placa de vídeo. A 
 - **Windows 10 ou 11**, 64 bits
 - **16 GB de RAM** recomendados
 - **Placa NVIDIA com 6 GB ou mais** (recomendado; sem ela, o processador é usado)
-- **~12 GB livres** em disco (ambiente Python e modelos)
+- **~16 GB livres** em disco (8 GB de componentes e 7 GB de modelos)
 - Conexão com a internet **apenas** na instalação e no primeiro uso
 
-O instalador cuida do resto: Python 3.11, ffmpeg, PyTorch com CUDA, WhisperX e a interface.
+Não é preciso instalar nada antes: Python, ffmpeg, PyTorch com CUDA, WhisperX e a interface são baixados e configurados automaticamente.
 
 ## Instalação
 
-1. Baixe o arquivo **`Transcritor-v1.0.0.zip`** na [página de versões](https://github.com/felipekevinns/transcritor/releases/latest).
-2. Extraia em uma pasta definitiva, por exemplo `C:\Transcritor`. Evite caminhos dentro do OneDrive.
-3. Dê dois cliques em **`Instalar.bat`** e aguarde. A instalação leva de 10 a 30 minutos, a maior parte em downloads.
-4. Abra o **Transcritor** pelo atalho criado na Área de Trabalho.
+Escolha uma das duas versões na [página de versões](https://github.com/felipekevinns/transcritor/releases/latest):
 
-O instalador pode ser executado de novo a qualquer momento para reparar a instalação: as etapas já concluídas são puladas.
+| | **Instalador** | **Portable** |
+|---|---|---|
+| Arquivo | `Transcritor-Setup-1.1.0.exe` | `Transcritor-Portable-1.1.0.zip` |
+| Para quem | Uso diário neste computador | Pen drive, PC de terceiros, sem instalar nada |
+| Escolha da pasta | Sim, no assistente | Onde você extrair |
+| Menu Iniciar e desinstalação | Sim | Não; basta apagar a pasta |
+| Modelos já na instalação | Opcional | Opcional, no primeiro uso |
+
+### Instalador
+
+1. Baixe e abra o **`Transcritor-Setup-1.1.0.exe`**.
+2. Siga o assistente: escolha a pasta e, se quiser, marque *Baixar os modelos agora*.
+3. Acompanhe o download dos componentes, de 10 a 30 minutos, na janela de preparo.
+4. Clique em **Concluir** com *Abrir o Transcritor agora* marcado.
+
+O instalador não pede permissão de administrador. Por padrão, ele instala em `%LOCALAPPDATA%\Programs\Transcritor`, e qualquer outra pasta pode ser escolhida. Para remover, use *Configurações → Aplicativos → Transcritor*.
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/instalador-boas-vindas.png" alt="Assistente de instalação"></td>
+    <td width="50%"><img src="docs/images/preparo-componentes.png" alt="Preparo dos componentes com progresso"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub>Assistente de instalação</sub></td>
+    <td align="center"><sub>Download e configuração dos componentes</sub></td>
+  </tr>
+</table>
+
+### Portable
+
+1. Baixe o **`Transcritor-Portable-1.1.0.zip`** e extraia em uma pasta de caminho curto, como `D:\Transcritor`.
+2. Abra o **`Transcritor.exe`** e clique em **Preparar**.
+3. Das próximas vezes, o `Transcritor.exe` abre direto.
+
+Tudo fica dentro da pasta (`runtime\` para os componentes e `models\` para os modelos), e nada é instalado no Windows. A pasta pode ser movida ou copiada.
+
+> **Aviso do Windows:** o `Transcritor.exe` e o instalador não têm assinatura digital paga. Se aparecer *O Windows protegeu o computador*, clique em **Mais informações → Executar assim mesmo**. O código-fonte de tudo está neste repositório.
 
 <details>
-<summary><b>Instalação pelo Git</b></summary>
+<summary><b>Para desenvolvedores: rodar a partir do código-fonte</b></summary>
 
 ```powershell
 git clone https://github.com/felipekevinns/transcritor.git C:\Transcritor
 cd C:\Transcritor
-powershell -ExecutionPolicy Bypass -File .\instalar.ps1
+powershell -ExecutionPolicy Bypass -File .\instalar.ps1     # cria venv\ com as dependências
+& ".\Abrir Transcritor.bat"
 ```
 
-Opções do instalador:
+Para gerar os pacotes de distribuição (requer [Inno Setup 6.7+](https://jrsoftware.org/isinfo.php)):
 
-| Parâmetro | Efeito |
-|---|---|
-| `-CpuOnly` | Não instala o PyTorch com CUDA (computadores sem placa NVIDIA). |
-| `-NoShortcut` | Não cria atalhos na Área de Trabalho. |
+```powershell
+powershell -ExecutionPolicy Bypass -File .\instalador\empacotar.ps1
+```
+
+Os arquivos são gerados em `dist\`.
 
 </details>
 
@@ -175,36 +210,47 @@ transcritor/
 ├── app/
 │   ├── app.py                  Janela, fila e comunicação com o worker
 │   ├── worker.py               Pipeline WhisperX e geração dos arquivos
+│   ├── dependencias.json       Versões, endereços e impressões digitais dos componentes
 │   ├── transcritor.ico
 │   └── ui/                     Interface (HTML, CSS e JavaScript)
+├── launcher/
+│   ├── Transcritor.cs          Transcritor.exe: inicializador e preparo dos componentes
+│   └── compilar.ps1            Compila com o C# do próprio Windows
+├── instalador/
+│   ├── transcritor.iss         Assistente de instalação (Inno Setup)
+│   ├── empacotar.ps1           Gera o Setup e o Portable em dist\
+│   └── gerar_imagens.py        Imagens do assistente
 ├── docs/images/                Imagens deste README
-├── Instalar.bat                Instalador (duplo clique)
-├── instalar.ps1                Script de instalação
-├── Abrir Transcritor.bat       Abre o app mostrando erros, se houver
+├── instalar.ps1                Ambiente de desenvolvimento (venv)
 ├── transcrever.bat             Linha de comando, sem falantes
 ├── transcrever_com_falantes.bat
-├── requirements.txt            Versões testadas
 └── CHANGELOG.md
 ```
 
 ## Solução de problemas
 
 <details>
+<summary><b>A preparação dos componentes foi interrompida ou deu erro</b></summary>
+
+Abra o `Transcritor.exe` de novo: a preparação continua de onde parou e não baixa outra vez o que já está completo. A tela de erro mostra as últimas linhas do registro, e o registro completo fica em `runtime\preparo.log`. Para refazer a verificação de uma instalação que já funcionava, execute `Transcritor.exe --reparar`.
+</details>
+
+<details>
 <summary><b>Erro <code>CERTIFICATE_VERIFY_FAILED</code> ao baixar modelos</b></summary>
 
-Antivírus que inspecionam HTTPS (como o Kaspersky) substituem os certificados. O instalador inclui o `pip-system-certs`, que faz o Python usar os certificados do Windows, e a verificação continua ativa. Se o erro persistir, execute o `Instalar.bat` novamente.
+Antivírus que inspecionam HTTPS (como o Kaspersky) substituem os certificados. O instalador inclui o `pip-system-certs`, que faz o Python usar os certificados do Windows, e a verificação continua ativa.
 </details>
 
 <details>
 <summary><b>A janela abre em branco ou acusa erro de WebView2</b></summary>
 
-Isso costuma acontecer quando o Microsoft Edge foi removido do sistema. O Transcritor localiza automaticamente uma cópia válida do runtime. Se não houver nenhuma, o instalador instala o *Microsoft Edge WebView2 Runtime*. Para ver a mensagem completa, abra o app por `Abrir Transcritor.bat`.
+Isso costuma acontecer quando o Microsoft Edge foi removido do sistema. O Transcritor localiza automaticamente uma cópia válida do runtime. Se não houver nenhuma, a preparação instala o *Microsoft Edge WebView2 Runtime* automaticamente.
 </details>
 
 <details>
 <summary><b>A transcrição está muito lenta</b></summary>
 
-Verifique se o cabeçalho do aplicativo mostra *GPU disponível* e se a opção *Placa de vídeo* está selecionada. Se a GPU não aparecer, atualize o driver da NVIDIA e execute o `Instalar.bat` novamente.
+Verifique se o cabeçalho do aplicativo mostra *GPU disponível* e se a opção *Placa de vídeo* está selecionada. Se a GPU não aparecer, atualize o driver da NVIDIA e execute `Transcritor.exe --reparar`.
 </details>
 
 <details>
