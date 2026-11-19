@@ -1,0 +1,23 @@
+# Ambiente Python (criado pelo instalador)
+venv/
+__pycache__/
+*.pyc
+
+# Dados pessoais e segredos - nunca versionar
+hf_token.txt
+vocabulario.txt
+app/config.json
+app/.webview/
+app/ultimo_registro.txt
+
+# Saidas, testes e registros locais
+teste/
+transcricoes/
+install_*.txt
+*.log
+
+# Atalhos gerados pelo instalador (caminhos absolutos)
+*.lnk
+
+# Pacotes de release
+dist/

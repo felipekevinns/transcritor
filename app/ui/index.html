@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Transcritor</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="wordmark">Transcritor</span>
+    <span class="brand-sub">WhisperX, processado neste computador</span>
+  </div>
+  <div class="device-line" id="deviceLine"></div>
+</header>
+
+<main class="layout">
+
+  <!-- Fila de arquivos -->
+  <section class="queue" id="queue">
+    <div class="section-head">
+      <h1>Arquivos</h1>
+      <div class="head-actions">
+        <button class="text-btn" id="addFiles">Adicionar arquivos</button>
+        <button class="text-btn" id="addFolder">Adicionar pasta</button>
+        <button class="text-btn quiet" id="clearList" hidden>Limpar lista</button>
+      </div>
+    </div>
+
+    <div class="dropzone" id="dropzone">
+      <div class="dz-inner">
+        <p class="dz-title">Arraste vídeos ou áudios para esta janela</p>
+        <p class="dz-sub">MP4, MKV, MOV, MP3, WAV, M4A e outros formatos. Sem limite de duração.<br>
+          Também é possível soltar uma pasta inteira.</p>
+        <button class="btn btn-secondary" id="dzPick">Selecionar arquivos</button>
+      </div>
+    </div>
+
+    <div class="table-wrap" id="tableWrap" hidden>
+      <table class="files">
+        <colgroup>
+          <col class="c-num"><col class="c-name"><col class="c-dur"><col class="c-status"><col class="c-actions">
+        </colgroup>
+        <thead>
+          <tr><th></th><th>Arquivo</th><th class="num">Duração</th><th>Situação</th><th></th></tr>
+        </thead>
+        <tbody id="fileRows"></tbody>
+      </table>
+    </div>
+
+    <div class="queue-foot" id="queueFoot" hidden>
+      <span id="totalsText"></span>
+      <span class="sep">·</span>
+      <span id="estimateText"></span>
+    </div>
+    <div class="drop-hint" id="dropHint">Solte para adicionar à lista</div>
+  </section>
+
+  <!-- Configuracoes -->
+  <aside class="settings" id="settings">
+
+    <div class="group">
+      <div class="label">Qualidade</div>
+      <div class="seg" data-key="quality">
+        <button data-value="precise"><span>Máxima precisão</span><small>large-v3</small></button>
+        <button data-value="fast"><span>Rápida</span><small>large-v3-turbo</small></button>
+      </div>
+      <p class="hint" id="qualityHint"></p>
+    </div>
+
+    <div class="group">
+      <div class="label">Processamento</div>
+      <div class="seg" data-key="device">
+        <button data-value="cuda"><span>Placa de vídeo</span><small id="gpuName">GPU</small></button>
+        <button data-value="cpu"><span>Processador</span><small id="cpuName">CPU</small></button>
+      </div>
+      <p class="hint" id="deviceHint"></p>
+    </div>
+
+    <div class="group">
+      <label class="label" for="language">Idioma falado</label>
+      <div class="select-wrap">
+        <select id="language" data-key="language">
+          <option value="pt">Português</option>
+          <option value="en">Inglês</option>
+          <option value="es">Espanhol</option>
+          <option value="fr">Francês</option>
+          <option value="it">Italiano</option>
+          <option value="de">Alemão</option>
+          <option value="ja">Japonês</option>
+          <option value="auto">Detectar automaticamente</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="label">Falantes</div>
+      <label class="check">
+        <input type="checkbox" id="diarize" data-key="diarize">
+        <span class="box"></span>
+        <span class="check-text">Identificar quem está falando
+          <small>Para reuniões, entrevistas e podcasts.</small></span>
+      </label>
+
+      <div class="sub-block" id="speakerBlock">
+        <div class="seg seg-small" data-key="speakers_mode">
+          <button data-value="auto"><span>Automático</span></button>
+          <button data-value="exact"><span>Exato</span></button>
+          <button data-value="range"><span>Intervalo</span></button>
+        </div>
+        <div class="inline-fields" id="exactFields">
+          <label>Pessoas <input type="number" min="1" max="20" id="num_speakers" data-key="num_speakers"></label>
+        </div>
+        <div class="inline-fields" id="rangeFields">
+          <label>De <input type="number" min="1" max="20" id="min_speakers" data-key="min_speakers"></label>
+          <label>até <input type="number" min="1" max="20" id="max_speakers" data-key="max_speakers"></label>
+        </div>
+
+        <div class="token-line" id="tokenLine">
+          <span id="tokenStatus"></span>
+          <button class="text-btn" id="tokenEdit">Alterar token</button>
+          <button class="text-btn" id="tokenCheck">Verificar</button>
+        </div>
+        <div class="token-form" id="tokenForm" hidden>
+          <input type="password" id="tokenInput" placeholder="hf_..." autocomplete="off" spellcheck="false">
+          <button class="btn btn-secondary btn-small" id="tokenSave">Salvar</button>
+        </div>
+        <p class="hint" id="tokenMsg"></p>
+      </div>
+    </div>
+
+    <div class="group">
+      <label class="label" for="vocabulary">Vocabulário</label>
+      <textarea id="vocabulary" data-key="vocabulary" rows="3"
+        placeholder="Nomes, siglas e termos que aparecem no vídeo. Ex.: Ana Ribeiro, CNPJ, Kubernetes."></textarea>
+      <p class="hint">Ajuda o modelo a escrever corretamente palavras raras.</p>
+    </div>
+
+    <div class="group">
+      <div class="label">Arquivos gerados</div>
+      <div class="formats" id="formats">
+        <label class="check"><input type="checkbox" value="txt"><span class="box"></span>
+          <span class="check-text">Texto corrido <em>.txt</em></span></label>
+        <label class="check"><input type="checkbox" value="readable"><span class="box"></span>
+          <span class="check-text">Texto com horários e falantes <em>.txt</em></span></label>
+        <label class="check"><input type="checkbox" value="docx"><span class="box"></span>
+          <span class="check-text">Documento do Word <em>.docx</em></span></label>
+        <label class="check"><input type="checkbox" value="srt"><span class="box"></span>
+          <span class="check-text">Legenda <em>.srt</em></span></label>
+        <label class="check"><input type="checkbox" value="vtt"><span class="box"></span>
+          <span class="check-text">Legenda para web <em>.vtt</em></span></label>
+        <label class="check"><input type="checkbox" value="json"><span class="box"></span>
+          <span class="check-text">Dados completos <em>.json</em></span></label>
+        <label class="check"><input type="checkbox" value="tsv"><span class="box"></span>
+          <span class="check-text">Tabela de horários <em>.tsv</em></span></label>
+      </div>
+    </div>
+
+    <div class="group">
+      <div class="label">Salvar em</div>
+      <label class="radio"><input type="radio" name="output_mode" value="beside"><span class="dot"></span>
+        <span class="check-text">Pasta “transcricoes” ao lado de cada arquivo</span></label>
+      <label class="radio"><input type="radio" name="output_mode" value="folder"><span class="dot"></span>
+        <span class="check-text">Uma pasta escolhida</span></label>
+      <div class="folder-line" id="folderLine">
+        <span class="path" id="outputFolderText">Nenhuma pasta escolhida</span>
+        <button class="text-btn" id="pickOutput">Escolher</button>
+      </div>
+    </div>
+
+    <details class="group advanced">
+      <summary class="label">Avançado</summary>
+      <div class="adv-row">
+        <label for="batch_size">Lote na placa de vídeo</label>
+        <div class="select-wrap small">
+          <select id="batch_size" data-key="batch_size">
+            <option value="4">4 · menos memória</option>
+            <option value="8">8 · recomendado</option>
+            <option value="16">16 · mais rápido</option>
+          </select>
+        </div>
+      </div>
+      <div class="adv-row">
+        <label for="vad_method">Detector de voz</label>
+        <div class="select-wrap small">
+          <select id="vad_method" data-key="vad_method">
+            <option value="pyannote">Pyannote · preciso</option>
+            <option value="silero">Silero · leve</option>
+          </select>
+        </div>
+      </div>
+      <p class="hint">Se faltar memória na placa, o lote é reduzido automaticamente.</p>
+    </details>
+
+  </aside>
+</main>
+
+<footer class="bottombar">
+  <div class="overall">
+    <div class="overall-text">
+      <span id="overallLabel">Pronto</span>
+      <span id="overallMeta" class="meta"></span>
+    </div>
+    <div class="track"><div class="fill" id="overallFill"></div></div>
+  </div>
+  <button class="text-btn" id="logToggle">Registro</button>
+  <button class="btn btn-secondary" id="cancelBtn" hidden>Cancelar</button>
+  <button class="btn btn-primary" id="startBtn" disabled>Transcrever</button>
+</footer>
+
+<div class="drawer" id="logDrawer" hidden>
+  <div class="drawer-head">
+    <span class="label">Registro</span>
+    <button class="text-btn" id="logClose">Fechar</button>
+  </div>
+  <pre id="logText"></pre>
+</div>
+
+<div class="modal" id="preview" hidden>
+  <div class="sheet">
+    <div class="sheet-head">
+      <div>
+        <div class="label">Transcrição</div>
+        <h2 id="previewTitle"></h2>
+      </div>
+      <div class="sheet-actions">
+        <button class="text-btn" id="previewCopy">Copiar texto</button>
+        <button class="text-btn" id="previewOpen">Abrir arquivo</button>
+        <button class="btn btn-secondary btn-small" id="previewClose">Fechar</button>
+      </div>
+    </div>
+    <div class="sheet-body" id="previewBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="app.js"></script>
+</body>
+</html>
